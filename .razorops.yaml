@@ -31,6 +31,7 @@ tasks:
         curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
         chmod +x ./snyk
 
+
         docker build -t saurabh3460/flash:${CI_COMMIT_SHA:0:8} -f server/Dockerfile server/
         ./snyk container monitor -d saurabh3460/todo-app:${CI_COMMIT_SHA:0:8} --file=server/Dockerfile
  
