@@ -32,17 +32,18 @@ tasks:
         curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
         chmod +x ./snyk
 
-
         docker build -t saurabh3460/falsk:${CI_COMMIT_SHA:0:8} .
         ./snyk container monitor -d saurabh3460/falsk:${CI_COMMIT_SHA:0:8} --file=./Dockerfile
 
   sast-trivy:
-    depends: [sast-snyk]
     steps:
+    - checkout
     - commands:
       - |
-          wget https://github.com/aquasecurity/trivy/releases/download/v0.30.3/trivy_0.30.3_Linux-64bit.deb
-          sudo dpkg -i trivy_0.30.3_Linux-64bit.deb
-          trivy image --format template --template "@junit.tpl" -o junit_report.xml saurabh3460/falsk:${CI_COMMIT_SHA:0:8}
+        wget -q https://github.com/aquasecurity/trivy/releases/download/v0.30.3/trivy_0.30.3_Linux-64bit.deb
+        sudo dpkg -i trivy_0.30.3_Linux-64bit.deb
+        
+        docker build -t saurabh3460/falsk:${CI_COMMIT_SHA:0:8} .
+        trivy image --format template --template "@junit.tpl" -o junit_report.xml saurabh3460/falsk:${CI_COMMIT_SHA:0:8}
     - reports/junit:
         paths: ["junit_report.xml"]
