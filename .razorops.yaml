@@ -1,6 +1,6 @@
 
 tasks:
-  build-test-codecov:
+  unit-testing:
     runner: razorci/python:3.9
     steps:
     - checkout
@@ -23,7 +23,7 @@ tasks:
     - reports/html: 
         dir: htmlcov
 
-  sast-snyk:
+  sast-with-snyk-saas:
     steps:
     - checkout
     - commands:
@@ -32,10 +32,10 @@ tasks:
         curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
         chmod +x ./snyk
 
-        docker build -t saurabh3460/falsk:${CI_COMMIT_SHA:0:8} .
-        ./snyk container monitor -d saurabh3460/falsk:${CI_COMMIT_SHA:0:8} --file=./Dockerfile
+        docker build -t kshyam/falsk:${CI_COMMIT_SHA:0:8} .
+        ./snyk container monitor -d kshyam/falsk:${CI_COMMIT_SHA:0:8} --file=./Dockerfile
 
-  sast-trivy:
+  sast-with-trivy:
     steps:
     - checkout
     - commands:
@@ -43,7 +43,7 @@ tasks:
         wget -q https://github.com/aquasecurity/trivy/releases/download/v0.30.3/trivy_0.30.3_Linux-64bit.deb
         sudo dpkg -i trivy_0.30.3_Linux-64bit.deb
         
-        docker build -t saurabh3460/falsk:${CI_COMMIT_SHA:0:8} .
-        trivy image --format template --template "@junit.tpl" -o junit_report.xml saurabh3460/falsk:${CI_COMMIT_SHA:0:8}
+        docker build -t kshyam/falsk:${CI_COMMIT_SHA:0:8} .
+        trivy image --format template --template "@junit.tpl" -o junit_report.xml kshyam/falsk:${CI_COMMIT_SHA:0:8}
     - reports/junit:
         paths: ["junit_report.xml"]
