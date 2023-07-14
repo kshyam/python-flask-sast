@@ -11,3 +11,7 @@ RUN pip install -r requirements.txt
 
 # copy every content from the local file to the image
 COPY . /app
+
+EXPOSE 5000
+
+CMD ["python","./app.py"]
