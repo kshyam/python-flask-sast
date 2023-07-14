@@ -1,5 +1,9 @@
+global:
+  runner:
+    os_image: ubuntu
+
 tasks:
-  unit-testing:
+  unit-tests:
     runner: razorci/python:3.9
     steps:
     - checkout
@@ -9,7 +13,6 @@ tasks:
       - pip install -r requirements.txt
     - commands:
       - python test.py
-
       - export PATH="$(python3 -m site --user-base)/bin:$PATH"
       # generate coverage reports
       - coverage run test.py
@@ -23,6 +26,7 @@ tasks:
         dir: htmlcov
 
   sast-with-snyk:
+    depends: [unit-tests]
     steps:
     - checkout
     - commands:
@@ -31,10 +35,11 @@ tasks:
         curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
         chmod +x ./snyk
 
-        docker build -t kshyam/falsk:${CI_COMMIT_SHA:0:8} .
-        ./snyk container monitor -d kshyam/falsk:${CI_COMMIT_SHA:0:8} --file=./Dockerfile
+        docker build -t kshyam/python-flask-sast:${CI_COMMIT_SHA:0:8} .
+        ./snyk container monitor -d kshyam/python-flask-sast:${CI_COMMIT_SHA:0:8} --file=./Dockerfile
 
   sast-with-trivy:
+    depends: [unit-tests]
     steps:
     - checkout
     - commands:
@@ -42,7 +47,7 @@ tasks:
         wget -q https://github.com/aquasecurity/trivy/releases/download/v0.30.3/trivy_0.30.3_Linux-64bit.deb
         sudo dpkg -i trivy_0.30.3_Linux-64bit.deb
         
-        docker build -t kshyam/falsk:${CI_COMMIT_SHA:0:8} .
-        trivy image --format template --template "@junit.tpl" -o junit_report.xml kshyam/falsk:${CI_COMMIT_SHA:0:8}
+        docker build -t kshyam/python-flask-sast:${CI_COMMIT_SHA:0:8} .
+        trivy image --format template --template "@junit.tpl" -o junit_report.xml kshyam/python-flask-sast:${CI_COMMIT_SHA:0:8}
     - reports/junit:
         paths: ["junit_report.xml"]
